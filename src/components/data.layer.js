@@ -5,7 +5,7 @@ import React from 'react';
 
 /** @namespace existingPost.data.stickied */
 
-const oneMinute = 6000; // CHANGE THIS TO BE 60000
+const oneMinute = 60000;
 
 export default class DataLayer extends React.Component {
 	constructor(props) {

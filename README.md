@@ -29,14 +29,10 @@ As per the provided specs, the app does the following:
 
 
 
-## Architecture
-
-The following explains the particular architectural decisions made for this app:
-
-**State Management**
+## State Management
 There is no third-party statement management tool used.  The state values needed to run the app are very slight and this did not justify the overhead (both in download packages, and in coding constructs) needed to implement 3rd-party state management tools.  This is especially true of Redux - which is a powerful tool, but for this application, it would be like building a sand castle with a bulldozer.
 
-**Component Caching**
+## Component Caching
 In this app, I've used a simple technique for sharing references between existing components.  Each component imports an initially-empty object called `components`.  In the constructor, the component adds a reference to itself into the `components` object.  For example, this code is found in the `<DataLayer/>` component:
 
     constructor(props) {

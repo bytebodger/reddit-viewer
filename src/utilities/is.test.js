@@ -30,22 +30,6 @@ test('is.aBoolean()', () => {
    expect(is.aBoolean(aTrue)).toEqual(true);
    expect(is.aBoolean(aZero)).toEqual(false);
 });
-test('is.aGuid()', () => {
-   expect(is.aGuid(aDecimal)).toEqual(false);
-   expect(is.aGuid(aFalse)).toEqual(false);
-   expect(is.aGuid(aGuid)).toEqual(true);
-   expect(is.aGuid(anEmptyArray)).toEqual(false);
-   expect(is.aGuid(anEmptyObject)).toEqual(false);
-   expect(is.aGuid(anEmptyString)).toEqual(false);
-   expect(is.aGuid(anInteger)).toEqual(false);
-   expect(is.aGuid(aNull)).toEqual(false);
-   expect(is.aGuid(anUndefined)).toEqual(false);
-   expect(is.aGuid(aPopulatedArray)).toEqual(false);
-   expect(is.aGuid(aPopulatedObject)).toEqual(false);
-   expect(is.aGuid(aPopulatedString)).toEqual(false);
-   expect(is.aGuid(aTrue)).toEqual(false);
-   expect(is.aGuid(aZero)).toEqual(false);
-});
 test('is.anArray()', () => {
    expect(is.anArray(aDecimal)).toEqual(false);
    expect(is.anArray(aFalse)).toEqual(false);

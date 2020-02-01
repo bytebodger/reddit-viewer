@@ -3,20 +3,6 @@ class booleanValidation {
       return (typeof value === 'boolean');
    }
    
-   aGuid(value) {
-      if (!this.aPopulatedString(value)) { return false; }
-      if (value.length !== 32) { return false; }
-      for (let i = 0; i < 32; i++) {
-         const characterCode = value.charCodeAt(i);
-         if (i === 0) {
-            if (!(characterCode >= 65 && characterCode <= 90)) { return false; }
-         } else {
-            if (!(characterCode >= 48 && characterCode <= 57) && !(characterCode >= 65 && characterCode <= 90)) { return false; }
-         }
-      }
-      return true;
-   }
-   
    anArray(value) {
       return Array.isArray(value);
    }

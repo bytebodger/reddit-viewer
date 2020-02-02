@@ -49,7 +49,7 @@ export default class DataLayer extends React.Component {
    appendToSubreddit() {
       const lastPost = this.state.posts[this.state.posts.length - 1].data;
       const {lastSearch} = this.state;
-      const promise = fetch(`https://www.reddit.com/r/${lastSearch.subreddit}.json?limit=100&after=t3_${lastPost.id}`)
+      const promise = fetch(`https://www.reddit.com/r/${lastSearch.subreddit}.json?limit=100&after=t3_${lastPost.id}&random=${Date.now()}`)
       .then(response => response.json())
       .catch(error => {
          console.error(`error trying to append to the ${lastSearch.subreddit} subreddit`);
@@ -69,7 +69,7 @@ export default class DataLayer extends React.Component {
    
    getSubreddit(subreddit = '') {
       if (!is.aPopulatedString(subreddit)) return;
-      const promise = fetch(`https://www.reddit.com/r/${subreddit}.json?limit=100`)
+      const promise = fetch(`https://www.reddit.com/r/${subreddit}.json?limit=100&random=${Date.now()}`)
       .then(response => response.json())
       .catch(error => {
          console.error(`error trying to retrieve the ${subreddit} subreddit`);
@@ -147,7 +147,7 @@ export default class DataLayer extends React.Component {
       setTimeout(() => {
          const {lastSearch} = this.state;
          if (!lastSearch.subreddit) return;
-         let url = `https://www.reddit.com/r/${lastSearch.subreddit}.json?limit=25`;
+         let url = `https://www.reddit.com/r/${lastSearch.subreddit}.json?limit=25&random=${Date.now()}`;
          if (this.currentPage > 1) {
             const previousPostIndex = (this.currentPage * constant.pageSize) - 1;
             const after = this.state.posts[previousPostIndex].data.id;

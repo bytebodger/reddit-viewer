@@ -49,17 +49,17 @@ export default class DataLayer extends React.Component {
    appendToSubreddit() {
       const lastPost = this.state.posts[this.state.posts.length - 1].data;
       const {lastSearch} = this.state;
-      const promise = fetch(`https://www.reddit.com/r/${lastSearch.subreddit}.json?limit=100&after=t3_${lastPost.id}&random=${Date.now()}`)
+      fetch(`https://www.reddit.com/r/${lastSearch.subreddit}.json?limit=100&after=t3_${lastPost.id}&random=${Date.now()}`)
       .then(response => response.json())
+      .then(json => {
+         if (json && json.data) {
+            const combinedPosts = [...this.state.posts, ...json.data.children];
+            this.setState({posts : combinedPosts});
+         }
+      })
       .catch(error => {
          console.error(`error trying to append to the ${lastSearch.subreddit} subreddit`);
          console.error(error);
-      });
-      promise.then(response => {
-         if (response && response.data) {
-            const combinedPosts = [...this.state.posts, ...response.data.children];
-            this.setState({posts : combinedPosts});
-         }
       });
    }
    
@@ -69,14 +69,10 @@ export default class DataLayer extends React.Component {
    
    getSubreddit(subreddit = '') {
       if (!is.aPopulatedString(subreddit)) return;
-      const promise = fetch(`https://www.reddit.com/r/${subreddit}.json?limit=100&random=${Date.now()}`)
+      fetch(`https://www.reddit.com/r/${subreddit}.json?limit=100&random=${Date.now()}`)
       .then(response => response.json())
-      .catch(error => {
-         console.error(`error trying to retrieve the ${subreddit} subreddit`);
-         console.error(error);
-      });
-      promise.then(response => {
-         if (!response) {
+      .then(json => {
+         if (!json) {
             this.setState({
                lastSearch : {
                   failed : true,
@@ -86,16 +82,20 @@ export default class DataLayer extends React.Component {
             });
             return;
          }
-         if (response.data && response.data.children) {
+         if (json.data && json.data.children) {
             this.currentPage = 1;
             this.setState({
                lastSearch : {
                   failed : false,
                   subreddit : subreddit,
                },
-               posts : response.data.children,
+               posts : json.data.children,
             });
          }
+      })
+      .catch(error => {
+         console.error(`error trying to retrieve the ${subreddit} subreddit`);
+         console.error(error);
       });
    }
    
@@ -153,17 +153,13 @@ export default class DataLayer extends React.Component {
             const after = this.state.posts[previousPostIndex].data.id;
             url += `&after=tp3_${after}`;
          }
-         const promise = fetch(url)
+         fetch(url)
          .then(response => response.json())
-         .catch(error => {
-            console.error(`error trying to update the ${lastSearch.subreddit} subreddit`);
-            console.error(error);
-         });
-         promise.then(response => {
-            if (response && response.data && response.data.children) {
+         .then(json => {
+            if (json && json.data && json.data.children) {
                let originalPosts = JSON.parse(JSON.stringify(this.state.posts));
                let originalPostsJson = JSON.stringify(this.state.posts);
-               let latestPosts = JSON.parse(JSON.stringify(response.data.children));
+               let latestPosts = JSON.parse(JSON.stringify(json.data.children));
                let updatedPosts = this.updateExistingPosts(originalPosts, latestPosts);
                updatedPosts = this.addNewPosts(updatedPosts, latestPosts);
                updatedPosts = this.removeDeletedPosts(updatedPosts, latestPosts);
@@ -172,6 +168,10 @@ export default class DataLayer extends React.Component {
                   this.setState({posts : updatedPosts});
                }
             }
+         })
+         .catch(error => {
+            console.error(`error trying to update the ${lastSearch.subreddit} subreddit`);
+            console.error(error);
          });
          this.updateSubreddit();
       }, constant.oneMinute);

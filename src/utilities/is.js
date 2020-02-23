@@ -1,53 +1,35 @@
 class booleanValidation {
-   aBoolean(value) {
-      return (typeof value === 'boolean');
-   }
+   aBoolean = value => typeof value === 'boolean';
    
-   anArray(value) {
-      return Array.isArray(value);
-   }
+   anArray = value => Array.isArray(value);
    
-   anInteger(value) {
-      return Number.isInteger(value);
-   }
+   anInteger = value => Number.isInteger(value);
    
-   anObject(value) {
-      return (typeof value === 'object' && !Array.isArray(value) && value !== null);
-   }
+   anObject = value => typeof value === 'object' && !Array.isArray(value) && value !== null;
    
-   aNumber(value) {
-      return typeof value === 'number';
-   }
+   aNumber = value => typeof value === 'number';
    
-   aPopulatedArray(value) {
-      if (!Array.isArray(value)) { return false; }
+   aPopulatedArray = value => {
+      if (!Array.isArray(value)) return false;
       return !!value.length;
-   }
+   };
    
-   aPopulatedObject(value) {
-      if (this.nullOrUndefined(value)) { return false; }
+   aPopulatedObject = value => {
+      if (this.nullOrUndefined(value)) return false;
       return (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length > 0);
-   }
+   };
    
-   aPopulatedString(value) {
-      return (typeof value === 'string' && value.trim() !== '');
-   }
+   aPopulatedString = value => typeof value === 'string' && value.trim() !== '';
    
-   aString(value) {
-      return (typeof value === 'string');
-   }
+   aPositiveInteger = value => this.anInteger(value) && value > 0;
    
-   null(variable) {
-      return variable === null;
-   }
+   aString = value => typeof value === 'string';
    
-   nullOrUndefined(variable) {
-      return (variable === undefined || variable === null);
-   }
+   null = variable => variable === null;
    
-   undefined(variable) {
-      return variable === undefined;
-   }
+   nullOrUndefined = variable => variable === undefined || variable === null;
+   
+   undefined = variable => variable === undefined;
 }
 
 const is = new booleanValidation();

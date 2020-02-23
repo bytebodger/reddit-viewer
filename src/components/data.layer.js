@@ -1,30 +1,32 @@
-import components from '../utilities/components';
+import DataLayerContext from './data.layer.context';
 import DisplayLayer from './display.layer';
 import is from '../utilities/is';
 import React from 'react';
 
 /** @namespace existingPost.data.stickied */
-// test
 
 const constant = {
-   oneMinute : 60000,
-   pageSize : 25,
+   oneMinute: 60000,
+   pageSize: 25,
 };
+
 export default class DataLayer extends React.Component {
    constructor(props) {
       super(props);
       this.state = {
-         lastSearch : {
-            failed : false,
-            subreddit : null,
+         appendToSubreddit: this.appendToSubreddit,
+         currentPage: 1,
+         getSubreddit: this.getSubreddit,
+         lastSearch: {
+            failed: false,
+            subreddit: null,
          },
-         posts : [],
+         posts: [],
+         setCurrentPage: this.setCurrentPage,
       };
-      components.DataLayer = this;
-      this.currentPage = 1;
    }
    
-   addNewPosts(originalPosts = [], latestPosts = []) {
+   addNewPosts = (originalPosts = [], latestPosts = []) => {
       if (!is.anArray(originalPosts) || !is.anArray(latestPosts)) return;
       let updatedPosts = JSON.parse(JSON.stringify(originalPosts));
       let insertNewPostsAt = -1;
@@ -38,75 +40,71 @@ export default class DataLayer extends React.Component {
       if (insertNewPostsAt === -1) {
          insertNewPostsAt = 0;
       }
-      latestPosts.forEach((latestPost, latestPostIndex) => {
+      latestPosts.forEach(latestPost => {
          if (!originalPostIds.some(originalPostId => originalPostId === latestPost.data.id)) {
             updatedPosts.splice(insertNewPostsAt, 0, latestPost);
             insertNewPostsAt++;
          }
       });
       return updatedPosts;
-   }
+   };
    
-   appendToSubreddit() {
+   appendToSubreddit = () => {
       const lastPost = this.state.posts[this.state.posts.length - 1].data;
       const {lastSearch} = this.state;
       fetch(`https://www.reddit.com/r/${lastSearch.subreddit}.json?limit=100&after=t3_${lastPost.id}&random=${Date.now()}`)
-      .then(response => response.json())
-      .then(json => {
-         if (json && json.data) {
-            const combinedPosts = [...this.state.posts, ...json.data.children];
-            this.setState({posts : combinedPosts});
-         }
-      })
-      .catch(error => {
-         console.error(`error trying to append to the ${lastSearch.subreddit} subreddit`);
-         console.error(error);
-      });
-   }
+         .then(response => response.json())
+         .then(json => {
+            if (json && json.data) {
+               const combinedPosts = [...this.state.posts, ...json.data.children];
+               this.setState({posts: combinedPosts});
+            }
+         })
+         .catch(error => {
+            console.error(`error trying to append to the ${lastSearch.subreddit} subreddit`);
+            console.error(error);
+         });
+   };
    
-   componentDidMount() {
-      this.updateSubreddit();
-   }
+   componentDidMount = () => this.updateSubreddit();
    
-   getSubreddit(subreddit = '') {
+   getSubreddit = (subreddit = '') => {
       if (!is.aPopulatedString(subreddit)) return;
       fetch(`https://www.reddit.com/r/${subreddit}.json?limit=100&random=${Date.now()}`)
-      .then(response => response.json())
-      .then(json => {
-         if (!json) {
-            this.setState({
-               lastSearch : {
-                  failed : true,
-                  subreddit : subreddit,
-               },
-               posts : [],
-            });
-            return;
-         }
-         if (json.data && json.data.children) {
-            this.currentPage = 1;
-            this.setState({
-               lastSearch : {
-                  failed : false,
-                  subreddit : subreddit,
-               },
-               posts : json.data.children,
-            });
-         }
-      })
-      .catch(error => {
-         console.error(`error trying to retrieve the ${subreddit} subreddit`);
-         console.error(error);
-      });
-   }
+         .then(response => response.json())
+         .then(json => {
+            if (!json) {
+               this.setState({
+                  lastSearch: {
+                     failed: true,
+                     subreddit: subreddit,
+                  },
+                  posts: [],
+               });
+               return;
+            }
+            if (json.data && json.data.children) {
+               this.currentPage = 1;
+               this.setState({
+                  lastSearch: {
+                     failed: false,
+                     subreddit: subreddit,
+                  },
+                  posts: json.data.children,
+               });
+            }
+         })
+         .catch(error => {
+            console.error(`error trying to retrieve the ${subreddit} subreddit`);
+            console.error(error);
+         });
+   };
    
-   removeDeletedPosts(originalPosts = [], latestPosts = []) {
+   removeDeletedPosts = (originalPosts = [], latestPosts = []) => {
       if (!is.anArray(originalPosts) || !is.anArray(latestPosts)) return;
       let updatedPosts = JSON.parse(JSON.stringify(originalPosts));
       let latestPostIds = [];
-      latestPosts.forEach((latestPost, latestPostIndex) => {
-         latestPostIds.push(latestPost.data.id);
-      });
+      latestPosts.forEach(latestPost => latestPostIds.push(latestPost.data.id));
       let originalPostIndexesToRemove = [];
       originalPosts.forEach((originalPost, originalPostIndex) => {
          if (!latestPostIds.some(latestPostId => latestPostId === originalPost.data.id)) {
@@ -118,12 +116,25 @@ export default class DataLayer extends React.Component {
          updatedPosts.splice(indexToRemove, 1);
       }
       return updatedPosts;
-   }
+   };
    
-   updateExistingPosts(originalPosts = [], latestPosts = []) {
+   render = () => {
+      return (
+         <DataLayerContext.Provider value={this.state}>
+            <DisplayLayer/>
+         </DataLayerContext.Provider>
+      );
+   };
+   
+   setCurrentPage = (newPageNumber = 1) => {
+      if (!is.aPositiveInteger(newPageNumber)) return;
+      this.setState({currentPage: newPageNumber});
+   };
+   
+   updateExistingPosts = (originalPosts = [], latestPosts = []) => {
       if (!is.anArray(originalPosts) || !is.anArray(latestPosts)) return;
       let updatedPosts = JSON.parse(JSON.stringify(originalPosts));
-      latestPosts.forEach((latestPost, latestPostIndex) => {
+      latestPosts.forEach(latestPost => {
          let indexFound = false;
          originalPosts.forEach((originalPost, originalPostIndex) => {
             if (indexFound) return;
@@ -138,13 +149,9 @@ export default class DataLayer extends React.Component {
          });
       });
       return updatedPosts;
-   }
+   };
    
-   render() {
-      return <DisplayLayer/>;
-   }
-   
-   updateSubreddit() {
+   updateSubreddit = () => {
       setTimeout(() => {
          const {lastSearch} = this.state;
          if (!lastSearch.subreddit) return;
@@ -155,26 +162,26 @@ export default class DataLayer extends React.Component {
             url += `&after=tp3_${after}`;
          }
          fetch(url)
-         .then(response => response.json())
-         .then(json => {
-            if (json && json.data && json.data.children) {
-               let originalPosts = JSON.parse(JSON.stringify(this.state.posts));
-               let originalPostsJson = JSON.stringify(this.state.posts);
-               let latestPosts = JSON.parse(JSON.stringify(json.data.children));
-               let updatedPosts = this.updateExistingPosts(originalPosts, latestPosts);
-               updatedPosts = this.addNewPosts(updatedPosts, latestPosts);
-               updatedPosts = this.removeDeletedPosts(updatedPosts, latestPosts);
-               const updatedPostsJson = JSON.stringify(updatedPosts);
-               if (updatedPostsJson !== originalPostsJson) {
-                  this.setState({posts : updatedPosts});
+            .then(response => response.json())
+            .then(json => {
+               if (json && json.data && json.data.children) {
+                  let originalPosts = JSON.parse(JSON.stringify(this.state.posts));
+                  let originalPostsJson = JSON.stringify(this.state.posts);
+                  let latestPosts = JSON.parse(JSON.stringify(json.data.children));
+                  let updatedPosts = this.updateExistingPosts(originalPosts, latestPosts);
+                  updatedPosts = this.addNewPosts(updatedPosts, latestPosts);
+                  updatedPosts = this.removeDeletedPosts(updatedPosts, latestPosts);
+                  const updatedPostsJson = JSON.stringify(updatedPosts);
+                  if (updatedPostsJson !== originalPostsJson) {
+                     this.setState({posts: updatedPosts});
+                  }
                }
-            }
-         })
-         .catch(error => {
-            console.error(`error trying to update the ${lastSearch.subreddit} subreddit`);
-            console.error(error);
-         });
+            })
+            .catch(error => {
+               console.error(`error trying to update the ${lastSearch.subreddit} subreddit`);
+               console.error(error);
+            });
          this.updateSubreddit();
       }, constant.oneMinute);
-   }
+   };
 }

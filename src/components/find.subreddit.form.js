@@ -1,7 +1,7 @@
 import Button from '@material-ui/core/Button';
-import components from '../utilities/components';
-import is from '../utilities/is';
+import DataLayerContext from './data.layer.context';
 import React from 'react';
+import is from '../utilities/is';
 import {TextField} from '@material-ui/core';
 
 const enterKey = 13;
@@ -9,74 +9,77 @@ export default class FindSubredditForm extends React.Component {
    constructor(props) {
       super(props);
       this.state = {
-         findButtonIsDisabled : true,
-         subreddit : '',
+         findButtonIsDisabled: true,
+         subreddit: '',
       };
-      components.FindSubredditForm = this;
    }
    
-   checkFindButton(subreddit = '') {
+   static contextType = DataLayerContext;
+   
+   checkFindButton = (subreddit = '') => {
       if (!is.aString(subreddit)) return;
       const {findButtonIsDisabled} = this.state;
       if (subreddit && findButtonIsDisabled) {
-         this.setState({findButtonIsDisabled : false});
+         this.setState({findButtonIsDisabled: false});
       } else if (!subreddit && !findButtonIsDisabled) {
-         this.setState({findButtonIsDisabled : true});
+         this.setState({findButtonIsDisabled: true});
       }
-   }
+   };
    
-   render() {
+   render = () => {
       const {findButtonIsDisabled, subreddit} = this.state;
+      const dataLayer = this.context;
       return (
-         <div style={{marginBottom : '20px'}}>
+         <div style={{marginBottom: '20px'}}>
             <TextField
                id={'subreddit'}
                inputProps={{
-                  id : 'subredditInputField',
-                  name : 'subredditInputField',
-                  style : {width : '300px'}
+                  id: 'subredditInputField',
+                  name: 'subredditInputField',
+                  style: {width: '300px'}
                }}
                label={'Find a Subreddit'}
                name={'subreddit'}
-               onChange={(event) => this.updateSubredditField(event)}
-               onKeyDown={(event) => this.submitOnEnter(event)}
+               onChange={this.updateSubredditField}
+               onKeyDown={event => this.submitOnEnter(event)}
                placeholder={'Find a Subreddit'}
                value={subreddit}
             />
             <Button
                disabled={findButtonIsDisabled}
                id={'findButton'}
-               onClick={() => components.DataLayer.getSubreddit(subreddit)}
+               onClick={() => dataLayer.getSubreddit(subreddit)}
                style={{
-                  backgroundColor : '#3F51B5',
-                  color : '#eeeeee',
-                  marginLeft : '20px',
-                  marginTop : '10px',
-                  opacity : findButtonIsDisabled ? 0.3 : 1,
+                  backgroundColor: '#3F51B5',
+                  color: '#eeeeee',
+                  marginLeft: '20px',
+                  marginTop: '10px',
+                  opacity: findButtonIsDisabled ? 0.3 : 1,
                }}
             >
                Find
             </Button>
          </div>
       );
-   }
+   };
    
-   submitOnEnter(event) {
+   submitOnEnter = event => {
       if (!event.keyCode) return;
       if (event.keyCode === enterKey) {
          const {subreddit} = this.state;
          if (subreddit) {
-            components.DataLayer.getSubreddit(subreddit);
+            const dataLayer = this.context;
+            dataLayer.getSubreddit(subreddit);
          }
       }
-   }
+   };
    
-   updateSubredditField(event = {}) {
+   updateSubredditField = (event = {}) => {
       if (!event.target.name) return;
       const newValue = event.target.value.trim();
       this.setState({
-         subreddit : newValue,
+         subreddit: newValue,
       });
       this.checkFindButton(newValue);
-   }
+   };
 }

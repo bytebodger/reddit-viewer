@@ -1,34 +1,31 @@
+import DataLayerContext from './data.layer.context';
 import FindSubredditForm from './find.subreddit.form';
 import PostsTable from './posts.table';
 import React from 'react';
-import components from '../utilities/components';
 
 export default class DisplayLayer extends React.Component {
-   constructor(props) {
-      super(props);
-      components.DisplayLayer = this;
-   }
+   static contextType = DataLayerContext;
    
-   getFailureAlert() {
-      const {lastSearch} = components.DataLayer.state;
+   getFailureAlert = () => {
+      const {lastSearch} = this.context;
       if (!lastSearch.failed) return null;
       return (
          <div
             id={'failedSearchDiv'}
             style={{
-               backgroundColor : '#e82517',
-               borderRadius : '10px',
-               color : 'white',
-               marginBottom : '20px',
-               padding : '10px',
+               backgroundColor: '#e82517',
+               borderRadius: '10px',
+               color: 'white',
+               marginBottom: '20px',
+               padding: '10px',
             }}
          >
             The subreddit '{lastSearch.subreddit}' is invalid or could not be retrieved!
          </div>
       );
-   }
+   };
    
-   render() {
+   render = () => {
       return (
          <>
             {this.getFailureAlert()}
@@ -36,5 +33,5 @@ export default class DisplayLayer extends React.Component {
             <PostsTable/>
          </>
       );
-   }
+   };
 }

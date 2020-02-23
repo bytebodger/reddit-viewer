@@ -32,60 +32,7 @@ As per the provided specs, the app does the following:
 ## State Management
 There is no third-party statement management tool used.  The state values needed to run the app are very slight and this did not justify the overhead (both in download packages, and in coding constructs) needed to implement 3rd-party state management tools.  This is especially true of Redux - which is a powerful tool, but for this application, it would be like building a sand castle with a bulldozer.
 
-## Component Caching
-In this app, I've used a simple technique for sharing references between existing components.  Each component imports an initially-empty object called `components`.  In the constructor, the component adds a reference to itself into the `components` object.  For example, this code is found in the `<DataLayer/>` component:
-
-    constructor(props) {
-       super(props);
-       components.DisplayLayer = this;
-    }
-
-This means that, in any other component, if that component has included this line at the top of the file:
-
-    import components from '../utilities/components';
-
-Then the other component will be able to directly query the variables of `<DataLayer/>`.  The other components *will even be able to call the methods that exist on* `<DataLayer/>`.  For example, imagine that we have the following component:
-
-    import Bar from './bar';
-    import components from '../utilities/components';
-    import React from 'react';
-    
-    export default class Foo extends React.Component {
-       constructor(props) {
-          super(props);
-          components.Foo = this;
-       }
-
-       sayHello() {
-          console.log('The Foo component is saying "Hello"');
-       }
-
-       render() {
-          return <Bar />;
-       }
-    }
-
-We can now do this with the `<Bar/>` component:
-
-    import components from '../utilities/components';
-    import React from 'react';
-    
-    export default class Bar extends React.Component {
-       render() {
-          components.Foo.sayHello();
-          return <div>...</div>;
-       }
-    }
-And the `<Bar/>` component will have successfully invoked a method on `<Foo/>`.  Of course, this doesn't have to be conducted in a simple parent-child relationship.  Using the basic `components` object cache, a distant descendant can call methods on it ancestors that live far up the chain.  Also, this means that it's very easy for one component to inquire about the value of `state` variables in another component.
-
-I'll be perfectly honest here.  The few times that I've discussed or shown this approach to another "React Guy", I've always received the same response:  *"Don't do that."*  But here's the funny thing:  I've yet to hear anyone give me a rational, empirical reason why this approach is wrong.  The objections I've received normally fall into two categories:
-
- 1. **You're creating dependencies between the components in your app.**  Which is `true`.  But the same people who say that will happily clutter their app with a massive amount of Redux boilerplate - and state management tools are just another form of dependency.  Also, this approach needn't be used *everywhere* in the app.  It logically flows that it would only be applied on singletons.  You definitely wouldn't want to write it into any kind of utility component that's meant to be shared across the app, or even between multiple apps.  And if a given component doesn't need to utilize the shared info/functionality in `components`, it doesn't have to.
-
- 3. **This isn't "the way" that you do things in React.**  Yeah.  I've actually heard that from people several times.  Of course Redux wasn't the original way to handle state management in apps.  But people didn't like the "base" functionality, so they worked on a separate state management solution.  I don't really care if something is "the way" that other React developers do things.  I only care whether it's an elegant solution.
-
-
-
+Shared state is accomplished via React's native Context API.
 
 
 ## Layered Architecture
@@ -93,7 +40,7 @@ Whenever I'm doing green-fields development, I tend to use an approach with mult
 
 In this app, the layers are as such:
 
-    <App/> --> <DataLayer/> --> <DisplayLayer/> 
+    <App/> --> <DataLayer/> --> <DisplayLayer/>
 The `<DisplayLayer/>`, in turn, renders `<FindSubredditForm/>` and `<PostsTable/>`.
 
 ## Type Checking(ish)
@@ -103,13 +50,13 @@ For this reason, I have a utility library that I frequently use.  It's in `utili
 
     import is from '../utilities/is';
     import React from 'react';
-    
+
     export default class Foo extends React.Component {
        iterateOverThisArray(appendMessageToOutput = '', array = []) {
           if (!is.anArray(array) || !is.aPopulatedString(appendMessageToOutput)) return;
           array.forEach(element => `${element} ${appendMessageToOutput}`);
        }
-    
+
        render() {
           return null;
        }

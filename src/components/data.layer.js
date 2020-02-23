@@ -84,8 +84,8 @@ export default class DataLayer extends React.Component {
                return;
             }
             if (json.data && json.data.children) {
-               this.currentPage = 1;
                this.setState({
+                  currentPage: 1,
                   lastSearch: {
                      failed: false,
                      subreddit: subreddit,
@@ -153,20 +153,20 @@ export default class DataLayer extends React.Component {
    
    updateSubreddit = () => {
       setTimeout(() => {
-         const {lastSearch} = this.state;
+         const {currentPage, lastSearch, posts} = this.state;
          if (!lastSearch.subreddit) return;
-         let url = `https://www.reddit.com/r/${lastSearch.subreddit}.json?limit=25&random=${Date.now()}`;
-         if (this.currentPage > 1) {
-            const previousPostIndex = (this.currentPage * constant.pageSize) - 1;
-            const after = this.state.posts[previousPostIndex].data.id;
+         let url = `https://www.reddit.com/r/${lastSearch.subreddit}.json?limit=100&random=${Date.now()}`;
+         if (currentPage > 1) {
+            const previousPostIndex = (currentPage * constant.pageSize) - 1;
+            const after = posts[previousPostIndex].data.id;
             url += `&after=tp3_${after}`;
          }
          fetch(url)
             .then(response => response.json())
             .then(json => {
                if (json && json.data && json.data.children) {
-                  let originalPosts = JSON.parse(JSON.stringify(this.state.posts));
-                  let originalPostsJson = JSON.stringify(this.state.posts);
+                  let originalPosts = JSON.parse(JSON.stringify(posts));
+                  let originalPostsJson = JSON.stringify(posts);
                   let latestPosts = JSON.parse(JSON.stringify(json.data.children));
                   let updatedPosts = this.updateExistingPosts(originalPosts, latestPosts);
                   updatedPosts = this.addNewPosts(updatedPosts, latestPosts);

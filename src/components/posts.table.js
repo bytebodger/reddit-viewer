@@ -121,6 +121,6 @@ export default class PostsTable extends React.Component {
    
    smallestPossibleRedditThumbnail = {
       height: 108,
-      width: 67,
+      width: 108,
    };
 }

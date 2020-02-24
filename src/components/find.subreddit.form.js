@@ -64,22 +64,17 @@ export default class FindSubredditForm extends React.Component {
    };
    
    submitOnEnter = event => {
-      if (!event.keyCode) return;
-      if (event.keyCode === enterKey) {
-         const {subreddit} = this.state;
-         if (subreddit) {
-            const dataLayer = this.context;
-            dataLayer.getSubreddit(subreddit);
-         }
-      }
+      if (!event.keyCode || event.keyCode !== enterKey) return;
+      const {subreddit} = this.state;
+      if (!subreddit) return;
+      const dataLayer = this.context;
+      dataLayer.getSubreddit(subreddit);
    };
    
    updateSubredditField = (event = {}) => {
       if (!event.target.name) return;
       const newValue = event.target.value.trim();
-      this.setState({
-         subreddit: newValue,
-      });
+      this.setState({subreddit: newValue});
       this.checkFindButton(newValue);
    };
 }

@@ -25,7 +25,7 @@ export default class PostsTable extends React.Component {
    
    columns = [
       {
-         Cell: row => this.getThumbnail(row.original.data),
+         Cell: row => this.getThumbnailContainer(row.original.data),
          maxWidth: 120,
          sortable: false,
       },
@@ -36,23 +36,32 @@ export default class PostsTable extends React.Component {
       },
    ];
    
-   getThumbnail = post => {
-      let thumbnail = <div style={{height: 108, width: 67}}>{' '}</div>;
-      if (post.preview && post.preview.images) {
-         const images = post.preview.images[0];
-         if (images.resolutions) {
-            const smallestThumbnail = images.resolutions[0];
-            if (smallestThumbnail.width === 108) {
-               const url = smallestThumbnail.url.replace(/&amp;/g, '&');
-               thumbnail = (
-                  <div style={{height: 108, width: 67}}>
-                     <img src={url} alt={'thumbnail'}/>
-                  </div>
-               );
-            }
-         }
-      }
-      return thumbnail;
+   smallestPossibleRedditThumbnail = {
+      height: 108,
+      width: 67,
+   };
+   
+   getSmallestImageResolution = post => {
+      if (!post.preview || !post.preview.images || !post.preview.images.length) return null;
+      const images = post.preview.images[0];
+      if (!images.resolutions || !images.resolutions.length) return null;
+      return images.resolutions[0];
+   };
+   
+   getThumbnailContainer = post => {
+      return (
+         <div style={this.smallestPossibleRedditThumbnail}>
+            {this.getThumbnailImage(post)}
+         </div>
+      );
+   };
+   
+   getThumbnailImage = post => {
+      const smallestImageResolution = this.getSmallestImageResolution(post);
+      if (smallestImageResolution === null) return null;
+      if (smallestImageResolution.width !== this.smallestPossibleRedditThumbnail.width) return null;
+      const decodedUrl = smallestImageResolution.url.replace(/&amp;/g, '&');
+      return <img src={decodedUrl} alt={'thumbnail'}/>;
    };
    
    getTitleCell = post => {
